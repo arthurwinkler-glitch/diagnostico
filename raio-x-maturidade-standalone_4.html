@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raio-X de Maturidade</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root {
+    color-scheme: light;
+    --page-bg: #f9f9f7;
+    --surface: #fcfcfb;
+    --surface-raised: #ffffff;
+    --ink: #0b0b0b;
+    --ink-secondary: #52514e;
+    --ink-muted: #898781;
+    --hairline: #e1e0d9;
+    --border: rgba(11,11,11,0.10);
+    --accent: #2a78d6;
+    --accent-soft: #e7f0fb;
+    --accent-agile: #eb6834;
+    --good: #0ca30c;
+    --critical: #d03b3b;
+
+    --level-1-bg: #86b6ef; --level-1-ink: #0b0b0b;
+    --level-2-bg: #5598e7; --level-2-ink: #0b0b0b;
+    --level-3-bg: #2a78d6; --level-3-ink: #ffffff;
+    --level-4-bg: #184f95; --level-4-ink: #ffffff;
+
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Public Sans', system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    --font-chart: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page-bg: #0d0d0d;
+      --surface: #1a1a19;
+      --surface-raised: #232322;
+      --ink: #ffffff;
+      --ink-secondary: #c3c2b7;
+      --ink-muted: #898781;
+      --hairline: #2c2c2a;
+      --border: rgba(255,255,255,0.10);
+      --accent: #3987e5;
+      --accent-soft: #17253a;
+      --accent-agile: #d95926;
+      --good: #0ca30c;
+      --critical: #e66767;
+
+      --level-1-bg: #1c5cab; --level-1-ink: #ffffff;
+      --level-2-bg: #2a78d6; --level-2-ink: #ffffff;
+      --level-3-bg: #5598e7; --level-3-ink: #0b0b0b;
+      --level-4-bg: #86b6ef; --level-4-ink: #0b0b0b;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page-bg: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-raised: #232322;
+    --ink: #ffffff;
+    --ink-secondary: #c3c2b7;
+    --ink-muted: #898781;
+    --hairline: #2c2c2a;
+    --border: rgba(255,255,255,0.10);
+    --accent: #3987e5;
+    --accent-soft: #17253a;
+    --accent-agile: #d95926;
+    --good: #0ca30c;
+    --critical: #e66767;
+
+    --level-1-bg: #1c5cab; --level-1-ink: #ffffff;
+    --level-2-bg: #2a78d6; --level-2-ink: #ffffff;
+    --level-3-bg: #5598e7; --level-3-ink: #0b0b0b;
+    --level-4-bg: #86b6ef; --level-4-ink: #0b0b0b;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--page-bg); color: var(--ink); }
+
+  .page {
+    font-family: var(--font-body);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+    line-height: 1.5;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-secondary);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+    margin-bottom: 24px;
+  }
+  .back-btn:hover { color: var(--ink); border-color: var(--ink-muted); }
+
+  #viewForm, #viewResults {
+    animation: fadeIn 180ms ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #viewForm, #viewResults { animation: none; }
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(32px, 5vw, 44px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0 0 16px;
+  }
+
+  .lede {
+    font-size: 17px;
+    color: var(--ink-secondary);
+    max-width: 62ch;
+    margin: 0 0 32px;
+  }
+
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 0 0 40px;
+  }
+  .legend-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .legend-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 3px 8px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .legend-item p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--ink-secondary);
+    line-height: 1.4;
+  }
+
+  section { margin-bottom: 56px; }
+
+  .section-head { margin-bottom: 20px; }
+  .section-head .eyebrow { margin-bottom: 8px; }
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 26px;
+    margin: 0 0 8px;
+  }
+  .section-head p {
+    color: var(--ink-secondary);
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  .progress-track {
+    height: 6px;
+    background: var(--hairline);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 999px; }
+
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+  .dim-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .dim-number {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+  .dim-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 19px;
+    margin: 0;
+  }
+  .dim-note {
+    font-size: 13.5px;
+    color: var(--ink-secondary);
+    margin: 0 0 18px;
+    max-width: 68ch;
+  }
+
+  .statement {
+    padding: 14px 0;
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .statement p {
+    margin: 0;
+    font-size: 14.5px;
+  }
+  .freq {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .freq-btn {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink-secondary);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 13px;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  }
+  .freq-btn:hover { border-color: var(--accent); color: var(--ink); }
+  .freq-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .freq-btn[aria-checked="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+
+  .instrument-progress {
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-top: 8px;
+  }
+  .progress-label {
+    font-size: 13.5px;
+    color: var(--ink-secondary);
+    margin: 0 0 12px;
+  }
+  .instrument-progress .progress-track { max-width: 360px; margin: 0 auto 18px; }
+  .instrument-progress .primary-btn:disabled {
+    background: var(--hairline);
+    color: var(--ink-muted);
+    cursor: not-allowed;
+  }
+
+  .result-shell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .result-placeholder { text-align: left; }
+  .result-placeholder .progress-track { margin-top: 16px; max-width: 320px; }
+
+  .overall {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 28px;
+    align-items: center;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 24px;
+  }
+  .overall-figure { font-family: var(--font-mono); }
+  .overall-value {
+    font-size: 48px;
+    font-weight: 600;
+    font-variant-numeric: proportional-nums;
+    line-height: 1;
+  }
+  .overall-value span { font-size: 20px; color: var(--ink-muted); }
+  .overall-meter {
+    height: 10px;
+    width: 160px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .overall-meter-fill { height: 100%; border-radius: 999px; }
+
+  .level-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .overall-text p {
+    margin: 0;
+    font-size: 15px;
+    color: var(--ink-secondary);
+    max-width: 60ch;
+  }
+  .client-meta {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin: 0 0 6px;
+  }
+
+  .scoreplan-help {
+    background: var(--accent-soft);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px 10px 10px 4px;
+    padding: 16px 18px;
+    margin-bottom: 28px;
+  }
+  .scoreplan-help .eyebrow { margin: 0 0 8px; }
+  .scoreplan-help p:last-child {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ink-secondary);
+    max-width: 68ch;
+  }
+
+  .chart-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chart-toolbar h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .ghost-btn {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-secondary);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .ghost-btn:hover { color: var(--ink); border-color: var(--ink-muted); }
+  #resetBtn { margin-bottom: 32px; }
+
+  .scale-row {
+    display: grid;
+    grid-template-columns: minmax(150px,230px) 1fr 96px;
+    gap: 12px;
+    font-family: var(--font-chart);
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+  .scale-ticks { display: flex; justify-content: space-between; }
+
+  .bars-list { display: flex; flex-direction: column; gap: 18px; list-style: none; margin: 0 0 28px; padding: 0; }
+  .bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-radius: 8px;
+    padding: 4px;
+    cursor: default;
+  }
+  .bar-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .bar-row-main {
+    display: grid;
+    grid-template-columns: minmax(150px,230px) 1fr 96px;
+    gap: 12px;
+    align-items: center;
+  }
+  .bar-label { font-size: 13px; font-family: var(--font-chart); }
+  .bar-label .tag { display: block; font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+  .bar-track {
+    position: relative;
+    height: 20px;
+    background: var(--hairline);
+    border-radius: 4px;
+  }
+  .bar-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .bar-help {
+    margin: 0;
+    padding: 10px 12px;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ink-secondary);
+    max-width: 74ch;
+  }
+  .bar-help strong { color: var(--ink); }
+  .bar-value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--ink);
+    color: var(--page-bg);
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    line-height: 1.4;
+    padding: 8px 11px;
+    border-radius: 8px;
+    max-width: 240px;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 100ms ease;
+  }
+  #tooltip.visible { opacity: 1; }
+  #tooltip strong { display: block; margin-bottom: 2px; }
+
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin-bottom: 28px;
+  }
+  table.data-table th, table.data-table td {
+    text-align: left;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  table.data-table th { color: var(--ink-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.data-table td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  table.data-table tr.help-row td { padding: 0 10px 16px; border-bottom: 1px solid var(--hairline); }
+  table.data-table tr.help-row .bar-help { max-width: none; }
+
+  .priorities {
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .priorities h3 {
+    font-family: var(--font-display);
+    font-size: 17px;
+    margin: 0 0 14px;
+  }
+  .priority-item { display: flex; gap: 14px; padding: 12px 0; border-top: 1px solid var(--hairline); }
+  .priority-item:first-of-type { border-top: none; padding-top: 0; }
+  .priority-rank {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--surface-raised);
+    background: var(--ink-muted);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .priority-item p { margin: 2px 0 0; font-size: 13.5px; color: var(--ink-secondary); }
+  .priority-item strong { font-size: 14px; }
+
+  .follow-up {
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 24px;
+    text-align: center;
+  }
+  .follow-up p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ink-secondary);
+  }
+
+  .actions { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; align-items: center; }
+  .primary-btn {
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #ffffff;
+    background: var(--accent);
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    cursor: pointer;
+  }
+  .primary-btn:hover { opacity: 0.9; }
+  .toast { font-size: 12.5px; color: var(--good); font-weight: 600; opacity: 0; transition: opacity 150ms ease; }
+  .toast.visible { opacity: 1; }
+
+  footer {
+    border-top: 1px solid var(--hairline);
+    padding-top: 24px;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    max-width: 68ch;
+  }
+  footer p { margin: 0 0 8px; }
+
+  @media (max-width: 640px) {
+    .legend { grid-template-columns: repeat(2, 1fr); }
+    .overall { grid-template-columns: 1fr; }
+    .scale-row, .bar-row-main { grid-template-columns: 1fr; }
+    .scale-row .scale-ticks, .scale-row > span:first-child { display: none; }
+    .bar-value { text-align: left; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+
+  .brand-mark {
+    display: block;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    margin: 0 auto 28px;
+  }
+  .brand-mark.brand-mark-footer {
+    margin: 40px auto 0;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <img class="brand-mark" src="data:image/png;base64,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" alt="Scoreplan" width="40" height="40">
+  <div id="viewForm">
+    <p class="eyebrow">Instrumento de diagnóstico · Scoreplan</p>
+    <h1>Raio-X de Maturidade em Gestão de Projetos</h1>
+    <p class="lede">Descubra o nível de maturidade da sua empresa em gestão de projetos, combinando as dez áreas de conhecimento do PMBOK com os quatro valores do Manifesto Ágil. Responda às trinta afirmações abaixo pensando na realidade da sua empresa hoje — ao final, você recebe o nível de maturidade por dimensão e as prioridades para evoluir.</p>
+
+    <div class="legend" id="legend"></div>
+
+    <button type="button" class="ghost-btn" id="resetBtn" hidden>Limpar respostas e começar do zero</button>
+
+    <section id="instrumento">
+      <div class="section-head">
+        <h2>O instrumento</h2>
+        <p>Dez dimensões, três afirmações cada. Para cada afirmação, marque a frequência que melhor descreve a realidade da sua empresa hoje — não como você gostaria que fosse.</p>
+      </div>
+
+      <div id="dimensions"></div>
+
+      <div class="instrument-progress" id="instrumentProgress">
+        <p class="progress-label" id="progressLabel">0 de 30 afirmações respondidas</p>
+        <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <button type="button" class="primary-btn" id="viewResultBtn" disabled>Responda todas as afirmações para ver o resultado</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="viewResults" hidden>
+    <button type="button" class="back-btn" id="backToFormBtn">← Voltar e editar respostas</button>
+    <p class="eyebrow">Resultado · Scoreplan</p>
+    <section id="resultado">
+      <div class="section-head">
+        <h2>O resultado do seu diagnóstico</h2>
+        <p>Pontuação por dimensão, o nível geral de maturidade da sua empresa e as prioridades sugeridas para evoluir.</p>
+      </div>
+      <div class="result-shell" id="resultShell"></div>
+    </section>
+  </div>
+
+  <footer>
+    <p>Este instrumento foi construído pela Scoreplan combinando, como referência de boas práticas de mercado, as áreas de conhecimento do <strong>PMBOK</strong> (Project Management Institute) e os valores e princípios do <strong>Manifesto Ágil</strong>. Ele é um guia qualitativo para ajudar você a entender o estágio de maturidade da sua empresa em gestão de projetos — não é uma certificação oficial do PMI ou da Agile Alliance, e o resultado depende da honestidade das suas respostas.</p>
+    <p>As suas respostas ficam salvas apenas neste navegador — a Scoreplan não recebe nem armazena o que você responde aqui.</p>
+  </footer>
+  <img class="brand-mark brand-mark-footer" src="data:image/png;base64,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" alt="Scoreplan" width="40" height="40">
+</div>
+
+<div id="tooltip" role="tooltip"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var LEVEL_NAMES = { 1: "Iniciante", 2: "Em Estruturação", 3: "Maduro", 4: "Estratégico" };
+  var LEVEL_DESC = {
+    1: "Depende de esforço individual, sem padronização.",
+    2: "Boas práticas isoladas, ainda inconsistentes entre projetos.",
+    3: "Processos definidos e aplicados de forma consistente.",
+    4: "Processos consolidados, orientados a dados e usados como diferencial estratégico."
+  };
+  var OVERALL_NARRATIVE = {
+    1: "Os seus projetos avançam por esforço individual e boa vontade das pessoas envolvidas. Não há uma linguagem comum de gestão, os métodos variam de projeto para projeto e você tem pouca visibilidade sobre prazos, custos e riscos até que os problemas já estejam instalados. Esse é o momento de estabelecer uma base comum: papéis definidos, um fluxo simples de aprovação e um jeito único de registrar prioridades.",
+    2: "Já existem boas práticas isoladas na sua empresa — algumas equipes planejam, comunicam e monitoram riscos de forma consistente — mas elas não se repetem entre projetos nem são compartilhadas entre times. O principal risco é depender de pessoas específicas para o processo funcionar. O próximo passo é transformar essas boas práticas isoladas em um padrão mínimo, documentado e replicável.",
+    3: "Sua empresa já opera com processos definidos, papéis claros e uma cadência de acompanhamento previsível na maioria dos projetos. Existe disciplina de planejamento e de comunicação com as partes interessadas. O ganho agora está em tornar esses processos mais leves e adaptativos, reduzindo burocracia desnecessária e aumentando a frequência de entregas de valor.",
+    4: "Os seus processos estão consolidados, monitorados por indicadores e revisados em ciclos curtos. Você combina o rigor de planejamento do PMBOK com a capacidade de resposta do Manifesto Ágil: entrega valor com frequência, absorve mudanças sem crise e aprende a cada ciclo. O desafio deste estágio é manter a disciplina sem perder a agilidade conquistada."
+  };
+  var FREQ_LABELS = { 1: "Quase nunca", 2: "Às vezes", 3: "Na maior parte das vezes", 4: "Sempre" };
+  var SCOREPLAN_HELP = {
+    1: "Se a sua empresa está no estágio Iniciante, o primeiro ganho é sair da dispersão em planilhas e e-mails. No Scoreplan, cada projeto passa a ser cadastrado em um único lugar, com fases, etapas e responsáveis definidos, e o módulo de Portfólio de Projetos dá a primeira visão consolidada do que está em andamento. Os Planos de Ação, estruturados com a metodologia 5W2H, organizam tarefas que hoje dependem só da memória da equipe — o ponto de partida para transformar esforço individual em processo registrado.",
+    2: "No estágio Em Estruturação, o Scoreplan ajuda a padronizar as boas práticas que já existem em alguns times da sua empresa, mas ainda variam de projeto para projeto. Os Critérios de Seleção priorizam o portfólio com uma nota calculada automaticamente, a Gestão de Riscos organiza ameaças em matrizes 5×5, e o módulo de Indicadores conecta metas a KPIs — começando um histórico consistente entre projetos, em vez de práticas isoladas.",
+    3: "No estágio Maduro, o Scoreplan sustenta os processos que sua empresa já consolidou. O Acompanhamento Financeiro monitora ROI, payback e orçamento de cada projeto; os Dashboards e os gráficos de Gantt, Burnup e Burndown dão visibilidade em tempo real para os interessados, sem que ninguém precise pedir status; e a Gestão de Reuniões com IA registra decisões automaticamente. A Gestão da Qualidade integra ocorrências, auditorias e ações corretivas, fechando o ciclo de melhoria contínua.",
+    4: "No estágio Estratégico, o Scoreplan conecta a execução dos seus projetos diretamente à estratégia da empresa: os módulos de BSC e OKR amarram cada indicador de projeto aos objetivos estratégicos e às perspectivas do negócio, enquanto a SAGE IA sugere planos de ação com base no histórico acumulado. As integrações com ERPs (como SAP, TOTVS e Senior) unificam dados financeiros e operacionais, permitindo decisões de portfólio orientadas por dados e ciclos curtos de revisão de prioridades."
+  };
+
+  var DIMENSIONS = [
+    {
+      id: "gov", number: "01", name: "Governança e Integração",
+      tag: "PMBOK · Integração",
+      note: "Área de Integração do PMBOK: reunir decisões, aprovações e prioridades em um fluxo único e conhecido por todos.",
+      statements: [
+        { id: "gov1", text: "Existe um responsável formal (patrocinador ou gerente de projeto) claramente designado para cada iniciativa." },
+        { id: "gov2", text: "As decisões de priorização entre projetos são tomadas com base em critérios estratégicos definidos, não na urgência do momento." },
+        { id: "gov3", text: "Mudanças de escopo, prazo ou orçamento passam por um fluxo de aprovação conhecido por todos os envolvidos." }
+      ],
+      recommendations: {
+        1: "Defina, ainda que de forma simples, quem é o responsável por cada projeto e qual critério a empresa usa para decidir o que entra ou sai da fila de prioridades.",
+        2: "Documente em um único lugar os critérios de priorização já usados informalmente, para que deixem de depender da memória de quem decide.",
+        3: "Formalize um fluxo curto de aprovação de mudanças de escopo, prazo e orçamento, evitando que ele vire burocracia para decisões pequenas.",
+        4: "Use os dados de portfólio já disponíveis para revisar prioridades em ciclos regulares, e não apenas quando um problema aparece."
+      },
+      scoreplanHelp: {
+        1: "No Scoreplan, cadastre cada projeto com responsável, fases e etapas em um único lugar — o módulo de Portfólio de Projetos já dá a primeira visão consolidada de tudo o que está em andamento.",
+        2: "Os Critérios de Seleção do Scoreplan priorizam o portfólio com uma nota calculada automaticamente, tirando a decisão da urgência do momento e trazendo um critério comum entre os projetos.",
+        3: "O fluxo de aprovações do Scoreplan registra formalmente cada mudança de escopo, prazo ou orçamento, mantendo um histórico único e acessível a todos os envolvidos.",
+        4: "Use os indicadores de portfólio do Scoreplan para revisar prioridades em ciclos regulares, apoiado pela SAGE IA na sugestão de ajustes com base no histórico acumulado."
+      }
+    },
+    {
+      id: "esc", number: "02", name: "Escopo e Entregáveis",
+      tag: "PMBOK · Escopo",
+      note: "Área de Escopo do PMBOK, já preparando terreno para entregas incrementais do Manifesto Ágil.",
+      statements: [
+        { id: "esc1", text: "Cada projeto tem objetivos e entregáveis registrados por escrito antes do início da execução." },
+        { id: "esc2", text: "A equipe consegue distinguir claramente o que está dentro e o que está fora do escopo combinado." },
+        { id: "esc3", text: "Entregas são divididas em pacotes menores que permitem validação parcial ao longo do caminho." }
+      ],
+      recommendations: {
+        1: "Passe a registrar por escrito, mesmo que em um documento simples, o objetivo e os entregáveis combinados antes de iniciar um projeto.",
+        2: "Padronize um modelo mínimo de registro de escopo para que todos os projetos comecem com a mesma clareza.",
+        3: "Divida entregas grandes em pacotes menores que possam ser validados parcialmente ao longo do caminho.",
+        4: "Revise os critérios de divisão de entregáveis com base no que gerou retrabalho ou aprovações mais rápidas em projetos anteriores."
+      },
+      scoreplanHelp: {
+        1: "No cadastro de projeto do Scoreplan, registre objetivo e entregáveis antes de iniciar a execução, e organize as primeiras tarefas com os Planos de Ação em 5W2H.",
+        2: "Padronize o registro de escopo entre projetos usando os modelos de Plano de Ação do Scoreplan, garantindo que todo projeto comece com a mesma clareza sobre o que será entregue.",
+        3: "Divida entregas grandes em etapas menores dentro do cronograma do Scoreplan, acompanhando a validação parcial de cada pacote pelo Gantt e pelos Dashboards.",
+        4: "Revise, com apoio dos indicadores do Scoreplan, quais critérios de divisão de entregáveis reduziram retrabalho, refinando o padrão de escopo para os próximos projetos."
+      }
+    },
+    {
+      id: "cro", number: "03", name: "Cronograma e Prazos",
+      tag: "PMBOK · Cronograma",
+      note: "Área de Cronograma do PMBOK combinada com o ritmo de planejamento em ciclos curtos do Ágil.",
+      statements: [
+        { id: "cro1", text: "Existe um cronograma formal, com marcos e dependências mapeadas, para acompanhar o andamento." },
+        { id: "cro2", text: "Atrasos são identificados e comunicados antes de comprometerem a data final, não depois." },
+        { id: "cro3", text: "O planejamento é revisado em ciclos curtos e frequentes, e não apenas no início do projeto." }
+      ],
+      recommendations: {
+        1: "Crie um cronograma simples com marcos principais para os projetos em andamento, ainda que não seja detalhado.",
+        2: "Estabeleça um ritual curto e recorrente de acompanhamento de prazos, para que atrasos apareçam antes de virar crise.",
+        3: "Reduza o intervalo entre revisões de cronograma, tratando o planejamento como algo vivo e não uma peça fixa.",
+        4: "Use o histórico de desvios de prazo para ajustar estimativas futuras com mais precisão."
+      },
+      scoreplanHelp: {
+        1: "Monte um cronograma com marcos principais no Scoreplan, mesmo que simples, e acompanhe o andamento pelo gráfico de Gantt sem depender de planilhas paralelas.",
+        2: "Os Dashboards do Scoreplan mostram atrasos assim que aparecem, permitindo que a equipe comunique riscos de prazo antes que comprometam a data final.",
+        3: "Reduza o intervalo entre revisões de cronograma usando os gráficos de Burnup e Burndown do Scoreplan, tratando o planejamento como algo vivo e atualizado com frequência.",
+        4: "Use o histórico de desvios de prazo registrado no Scoreplan para calibrar estimativas de novos projetos com mais precisão, com apoio da SAGE IA na leitura dos padrões."
+      }
+    },
+    {
+      id: "cus", number: "04", name: "Custos e Orçamento",
+      tag: "PMBOK · Custos",
+      note: "Área de Custos do PMBOK: orçar, acompanhar e explicar desvios com disciplina.",
+      statements: [
+        { id: "cus1", text: "Cada projeto possui um orçamento definido e aprovado antes de iniciar." },
+        { id: "cus2", text: "Os gastos reais são comparados ao planejado em intervalos regulares." },
+        { id: "cus3", text: "Desvios de custo geram uma análise de causa e um plano de ação, não apenas um registro." }
+      ],
+      recommendations: {
+        1: "Defina um orçamento, mesmo que estimado, antes de iniciar cada projeto.",
+        2: "Compare periodicamente o gasto real com o planejado, em vez de apurar apenas ao final do projeto.",
+        3: "Sempre que houver desvio de custo, registre a causa e a ação tomada, criando um histórico útil para as próximas estimativas.",
+        4: "Use o padrão de desvios acumulado para antecipar riscos de orçamento logo no planejamento de novos projetos."
+      },
+      scoreplanHelp: {
+        1: "Defina o orçamento de cada projeto diretamente no Scoreplan e tenha, desde o início, um número de referência para acompanhar os gastos reais.",
+        2: "O Acompanhamento Financeiro do Scoreplan compara periodicamente o orçado com o realizado, sem exigir apuração manual ao final do projeto.",
+        3: "Registre no Scoreplan a causa de cada desvio de custo identificado, construindo um histórico útil para embasar decisões e planos de ação futuros.",
+        4: "As integrações do Scoreplan com ERPs como SAP, TOTVS e Senior unificam dados financeiros e operacionais, permitindo antecipar riscos de orçamento já no planejamento."
+      }
+    },
+    {
+      id: "qua", number: "05", name: "Qualidade",
+      tag: "PMBOK · Qualidade",
+      note: "Área de Qualidade do PMBOK: critérios de aceite claros e aprendizado contínuo sobre o que foi entregue.",
+      statements: [
+        { id: "qua1", text: "Existem critérios de aceite definidos para os principais entregáveis." },
+        { id: "qua2", text: "Entregas passam por alguma forma de revisão ou validação antes de serem consideradas concluídas." },
+        { id: "qua3", text: "Erros recorrentes de um projeto viram aprendizado aplicado nos próximos." }
+      ],
+      recommendations: {
+        1: "Defina critérios simples de aceite para os entregáveis mais importantes de cada projeto.",
+        2: "Padronize uma etapa de revisão antes de considerar qualquer entrega concluída.",
+        3: "Registre os erros recorrentes identificados nas revisões para que virem aprendizado aplicado nos próximos projetos.",
+        4: "Monitore indicadores de qualidade ao longo do tempo para identificar padrões antes que se tornem problemas recorrentes."
+      },
+      scoreplanHelp: {
+        1: "Defina critérios de aceite para os entregáveis mais importantes diretamente no Scoreplan, começando a formalizar o que conta como uma entrega concluída.",
+        2: "A Gestão da Qualidade do Scoreplan padroniza uma etapa de revisão antes de qualquer entrega ser considerada concluída, com registro de ocorrências.",
+        3: "Registre erros recorrentes como ocorrências no Scoreplan e vincule ações corretivas a eles, transformando cada revisão em aprendizado aplicado aos próximos projetos.",
+        4: "Acompanhe indicadores de qualidade ao longo do tempo pelos Dashboards do Scoreplan, identificando padrões de auditorias e ocorrências antes que se tornem recorrentes."
+      }
+    },
+    {
+      id: "pes", number: "06", name: "Pessoas e Colaboração",
+      tag: "Recursos · Indivíduos e interações",
+      note: "Área de Recursos do PMBOK e o primeiro valor do Manifesto Ágil: indivíduos e interações mais que processos e ferramentas.",
+      statements: [
+        { id: "pes1", text: "Os papéis e responsabilidades de cada participante do projeto estão claros para todo o time." },
+        { id: "pes2", text: "A equipe se sente à vontade para expor riscos e problemas sem medo de ser penalizada." },
+        { id: "pes3", text: "Decisões importantes são tomadas em conversas diretas com o time, e não apenas por meio de relatórios formais." }
+      ],
+      recommendations: {
+        1: "Deixe explícito, para cada projeto, quem faz o quê — muitas vezes o problema não é falta de talento, e sim falta de clareza de papéis.",
+        2: "Crie um espaço seguro e recorrente para a equipe expor riscos e problemas sem receio de ser penalizada por isso.",
+        3: "Priorize conversas diretas com o time nas decisões importantes, usando relatórios como apoio e não como único canal.",
+        4: "Invista no desenvolvimento contínuo da equipe: maturidade de processo sozinha não sustenta bons resultados sem pessoas capacitadas."
+      },
+      scoreplanHelp: {
+        1: "No cadastro de projeto do Scoreplan, deixe explícito quem é responsável por cada etapa, reduzindo a dependência de esforço individual e boa vontade.",
+        2: "A Gestão de Reuniões com IA do Scoreplan registra decisões e encaminhamentos automaticamente, criando um espaço documentado para a equipe expor riscos sem depender da memória de alguém.",
+        3: "Use as atas geradas pela SAGE IA nas reuniões do Scoreplan para priorizar decisões tomadas em conversa direta com o time, mantendo relatórios como apoio, não como único canal.",
+        4: "Acompanhe pelos Dashboards do Scoreplan se a maturidade de processo está sendo sustentada por pessoas capacitadas, cruzando indicadores de entrega com a alocação de recursos."
+      }
+    },
+    {
+      id: "com", number: "07", name: "Comunicação com Stakeholders",
+      tag: "Comunicações · Colaboração com o cliente",
+      note: "Áreas de Comunicações e Partes Interessadas do PMBOK e o segundo valor do Ágil: colaboração com o cliente mais que negociação de contratos.",
+      statements: [
+        { id: "com1", text: "Existe uma cadência regular e conhecida de atualização de status para os principais interessados." },
+        { id: "com2", text: "O cliente ou solicitante do projeto participa ativamente durante a execução, e não apenas no início e no fim." },
+        { id: "com3", text: "As informações sobre o andamento do projeto estão disponíveis sem que seja preciso pedir a alguém." }
+      ],
+      recommendations: {
+        1: "Estabeleça uma cadência mínima e conhecida de atualização de status para os principais interessados de cada projeto.",
+        2: "Convide o cliente ou solicitante a participar em pontos intermediários da execução, não apenas no início e no fechamento.",
+        3: "Disponibilize o andamento do projeto em um lugar acessível, para que ninguém precise pedir informação para saber onde as coisas estão.",
+        4: "Use o feedback contínuo dos interessados para ajustar prioridades durante a execução, não apenas para validar o resultado final."
+      },
+      scoreplanHelp: {
+        1: "Estabeleça uma cadência de atualização de status usando os Dashboards do Scoreplan, que já reúnem o andamento dos projetos em um único painel visível aos interessados.",
+        2: "Convide o cliente ou solicitante a acompanhar o projeto pelos Dashboards do Scoreplan em pontos intermediários, sem depender de reuniões extras para dar satisfação.",
+        3: "Disponibilize o andamento do projeto pelo GED e pelos Dashboards do Scoreplan, para que ninguém precise pedir informação para saber onde as coisas estão.",
+        4: "Use o feedback registrado nas reuniões com a SAGE IA do Scoreplan para ajustar prioridades durante a execução, não apenas para validar o resultado final."
+      }
+    },
+    {
+      id: "ris", number: "08", name: "Gestão de Riscos",
+      tag: "PMBOK · Riscos",
+      note: "Área de Riscos do PMBOK: identificar, responder e revisar antes que o risco vire problema.",
+      statements: [
+        { id: "ris1", text: "Os principais riscos de cada projeto são identificados e registrados formalmente." },
+        { id: "ris2", text: "Existem planos de resposta pensados antes de um risco se tornar um problema." },
+        { id: "ris3", text: "Riscos são revisados periodicamente ao longo da execução, não apenas no início." }
+      ],
+      recommendations: {
+        1: "Liste, mesmo que informalmente, os principais riscos de cada projeto antes de começar.",
+        2: "Registre formalmente os riscos identificados e defina um responsável por acompanhar cada um.",
+        3: "Prepare planos de resposta para os riscos mais relevantes antes que eles se tornem problemas reais.",
+        4: "Revise os riscos em intervalos curtos e regulares ao longo da execução, ajustando planos de resposta conforme o contexto muda."
+      },
+      scoreplanHelp: {
+        1: "Liste os principais riscos de cada projeto no módulo de Riscos do Scoreplan, ainda que de forma simples, para começar a tirá-los da memória da equipe.",
+        2: "A matriz de riscos 5×5 do Scoreplan organiza probabilidade e impacto de cada ameaça, com um responsável definido para acompanhar cada risco registrado.",
+        3: "Prepare planos de resposta para os riscos mais relevantes diretamente no Scoreplan, antes que eles se tornem problemas reais durante a execução.",
+        4: "Revise os riscos em ciclos curtos pelos Dashboards do Scoreplan, ajustando planos de resposta conforme o contexto muda e apoiado pelo histórico acumulado na SAGE IA."
+      }
+    },
+    {
+      id: "ada", number: "09", name: "Adaptação a Mudanças",
+      tag: "Ágil · Responder a mudanças",
+      note: "Terceiro valor do Manifesto Ágil: responder a mudanças mais que seguir um plano.",
+      statements: [
+        { id: "ada1", text: "Mudanças de prioridade ou de contexto são absorvidas sem gerar retrabalho excessivo ou crise." },
+        { id: "ada2", text: "Existe um processo leve para reavaliar prioridades em intervalos curtos, em vez de travar tudo no plano original." },
+        { id: "ada3", text: "A organização vê mudança de escopo como parte natural do trabalho, não como uma falha de planejamento." }
+      ],
+      recommendations: {
+        1: "Reconheça a mudança de prioridade como parte normal do trabalho, criando um caminho simples para reavaliá-la sem gerar crise.",
+        2: "Estabeleça um processo leve de revisão de prioridades em intervalos curtos, em vez de tratar o plano inicial como definitivo.",
+        3: "Reduza a burocracia envolvida em ajustar o plano, mantendo apenas os registros essenciais para rastreabilidade.",
+        4: "Use os ciclos curtos de revisão para capturar aprendizados, e não apenas para redistribuir tarefas."
+      },
+      scoreplanHelp: {
+        1: "Use o fluxo de priorização do Scoreplan para reavaliar mudanças de prioridade sem gerar crise, tratando o ajuste como parte natural do processo.",
+        2: "Os Critérios de Seleção do Scoreplan permitem revisar prioridades em intervalos curtos, evitando que o plano inicial seja tratado como definitivo.",
+        3: "Ajuste planos de ação diretamente no Scoreplan mantendo apenas os registros essenciais para rastreabilidade, reduzindo a burocracia de replanejamento.",
+        4: "Use os ciclos curtos de revisão de portfólio no Scoreplan, com apoio da SAGE IA, para capturar aprendizados a cada mudança, não apenas redistribuir tarefas."
+      }
+    },
+    {
+      id: "val", number: "10", name: "Entrega Contínua de Valor",
+      tag: "Ágil · Entregas frequentes",
+      note: "Quarto valor do Manifesto Ágil: entregar valor em funcionamento com frequência, com documentação na medida certa.",
+      statements: [
+        { id: "val1", text: "Entregas de valor acontecem em ciclos curtos, e não apenas em um grande lançamento final." },
+        { id: "val2", text: "O valor gerado por cada entrega é medido de alguma forma, não apenas presumido." },
+        { id: "val3", text: "Documentação existe na medida certa para apoiar o time, sem virar um fim em si mesma." }
+      ],
+      recommendations: {
+        1: "Busque quebrar o próximo grande lançamento em pelo menos uma entrega intermediária que já gere valor percebido.",
+        2: "Padronize entregas em ciclos mais curtos e frequentes, mesmo que o projeto como um todo seja longo.",
+        3: "Defina uma forma simples de medir o valor gerado por cada entrega, em vez de presumir que ela funcionou.",
+        4: "Mantenha a documentação na medida certa, revisando periodicamente se ela ainda apoia o time ou já virou apenas burocracia."
+      },
+      scoreplanHelp: {
+        1: "Estruture a próxima entrega intermediária como uma etapa própria no cronograma do Scoreplan, gerando valor percebido antes do grande lançamento final.",
+        2: "Os gráficos de Burnup e Burndown do Scoreplan acompanham entregas em ciclos mais curtos e frequentes, mesmo quando o projeto como um todo é longo.",
+        3: "Defina indicadores no Scoreplan para medir o valor gerado por cada entrega, em vez de presumir que ela funcionou.",
+        4: "Conecte os indicadores de entrega do Scoreplan aos módulos de BSC e OKR, ligando cada ciclo de valor entregue aos objetivos estratégicos da empresa."
+      }
+    }
+  ];
+
+  var TOTAL_STATEMENTS = DIMENSIONS.reduce(function (n, d) { return n + d.statements.length; }, 0);
+  var STORAGE_KEY = "scoreplan-raiox-maturidade-v1";
+
+  var state = { answers: {} };
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var saved = JSON.parse(raw);
+        if (saved && saved.answers) {
+          state.answers = saved.answers;
+          return;
+        }
+      }
+    } catch (e) { /* localStorage indisponível — segue em branco */ }
+    state.answers = {};
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) { /* melhor esforço — segue sem persistir */ }
+  }
+
+  function levelFromScore(score) {
+    if (score < 1.5) return 1;
+    if (score < 2.5) return 2;
+    if (score < 3.5) return 3;
+    return 4;
+  }
+
+  function fmt(n) { return n.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }); }
+
+  function levelChipHtml(level, size) {
+    return '<span class="level-chip" style="background:var(--level-' + level + '-bg);color:var(--level-' + level + '-ink);' + (size || "") + '">Nível ' + level + ' · ' + LEVEL_NAMES[level] + '</span>';
+  }
+
+  // ---------- build legend ----------
+  function renderLegend() {
+    var el = document.getElementById("legend");
+    var html = "";
+    [1, 2, 3, 4].forEach(function (lvl) {
+      html += '<div class="legend-item">' + levelChipHtml(lvl) + '<p>' + LEVEL_DESC[lvl] + '</p></div>';
+    });
+    el.innerHTML = html;
+  }
+
+  // ---------- build instrument ----------
+  function renderDimensions() {
+    var host = document.getElementById("dimensions");
+    var html = "";
+    DIMENSIONS.forEach(function (dim) {
+      html += '<article class="dim-card">';
+      html += '<div class="dim-head"><span class="dim-number">' + dim.number + '</span><h3 class="dim-name">' + dim.name + '</h3></div>';
+      html += '<p class="dim-note"><strong>' + dim.tag + '.</strong> ' + dim.note + '</p>';
+      dim.statements.forEach(function (st) {
+        html += '<div class="statement">';
+        html += '<p>' + st.text + '</p>';
+        html += '<div class="freq" role="radiogroup" aria-label="' + st.text.replace(/"/g, "&quot;") + '">';
+        [1, 2, 3, 4].forEach(function (v) {
+          html += '<button type="button" class="freq-btn" data-statement="' + st.id + '" data-value="' + v + '" role="radio" aria-checked="false">' + FREQ_LABELS[v] + '</button>';
+        });
+        html += '</div></div>';
+      });
+      html += '</article>';
+    });
+    host.innerHTML = html;
+
+    host.querySelectorAll(".freq-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var sid = btn.getAttribute("data-statement");
+        var val = parseInt(btn.getAttribute("data-value"), 10);
+        state.answers[sid] = val;
+        syncFreqButtons(sid);
+        saveState();
+        renderResults();
+      });
+    });
+  }
+
+  function syncFreqButtons(statementId) {
+    var current = state.answers[statementId];
+    document.querySelectorAll('.freq-btn[data-statement="' + statementId + '"]').forEach(function (btn) {
+      var isChecked = parseInt(btn.getAttribute("data-value"), 10) === current;
+      btn.setAttribute("aria-checked", isChecked ? "true" : "false");
+    });
+  }
+
+  function syncAllFreqButtons() {
+    DIMENSIONS.forEach(function (dim) {
+      dim.statements.forEach(function (st) { syncFreqButtons(st.id); });
+    });
+  }
+
+  // ---------- results ----------
+  function computeDimensionScores() {
+    return DIMENSIONS.map(function (dim) {
+      var vals = dim.statements.map(function (st) { return state.answers[st.id]; });
+      var answered = vals.filter(function (v) { return typeof v === "number"; });
+      var avg = answered.length ? answered.reduce(function (a, b) { return a + b; }, 0) / answered.length : null;
+      return {
+        dim: dim,
+        answeredCount: answered.length,
+        score: avg,
+        level: avg !== null ? levelFromScore(avg) : null
+      };
+    });
+  }
+
+  function answeredTotal() {
+    return DIMENSIONS.reduce(function (n, dim) {
+      return n + dim.statements.filter(function (st) { return typeof state.answers[st.id] === "number"; }).length;
+    }, 0);
+  }
+
+  var lastResults = null;
+  var showTable = false;
+  function showResultsPage() {
+    document.getElementById("viewForm").hidden = true;
+    document.getElementById("viewResults").hidden = false;
+    window.scrollTo(0, 0);
+  }
+
+  function showFormPage() {
+    document.getElementById("viewResults").hidden = true;
+    document.getElementById("viewForm").hidden = false;
+    window.scrollTo(0, 0);
+  }
+
+  function updateInstrumentProgress(answered) {
+    var pct = Math.round((answered / TOTAL_STATEMENTS) * 100);
+    var label = document.getElementById("progressLabel");
+    var fill = document.getElementById("progressFill");
+    var btn = document.getElementById("viewResultBtn");
+    document.getElementById("resetBtn").hidden = answered === 0;
+    fill.style.width = pct + "%";
+    if (answered < TOTAL_STATEMENTS) {
+      label.textContent = answered + " de " + TOTAL_STATEMENTS + " afirmações respondidas";
+      btn.disabled = true;
+      btn.textContent = "Responda todas as afirmações para ver o resultado";
+    } else {
+      label.textContent = "Todas as " + TOTAL_STATEMENTS + " afirmações respondidas.";
+      btn.disabled = false;
+      btn.textContent = "Ver resultado do diagnóstico";
+    }
+  }
+
+  function renderResults() {
+    var shell = document.getElementById("resultShell");
+    var answered = answeredTotal();
+    updateInstrumentProgress(answered);
+
+    if (answered < TOTAL_STATEMENTS) {
+      lastResults = null;
+      return;
+    }
+
+    var dimScores = computeDimensionScores();
+    var overallScore = dimScores.reduce(function (a, d) { return a + d.score; }, 0) / dimScores.length;
+    var overallLevel = levelFromScore(overallScore);
+    var sorted = dimScores.slice().sort(function (a, b) { return a.score - b.score; });
+    lastResults = { dimScores: dimScores, overallScore: overallScore, overallLevel: overallLevel, sorted: sorted };
+
+    var meterPct = ((overallScore - 1) / 3) * 100;
+
+    var html = "";
+    html += '<div class="overall">';
+    html += '<div class="overall-figure"><div class="overall-value">' + fmt(overallScore) + '<span> / 4,0</span></div>';
+    html += '<div class="overall-meter"><div class="overall-meter-fill" style="width:' + meterPct + '%;background:var(--level-' + overallLevel + '-bg)"></div></div></div>';
+    html += '<div class="overall-text">' + levelChipHtml(overallLevel) + '<p>' + OVERALL_NARRATIVE[overallLevel] + '</p></div>';
+    html += '</div>';
+
+    html += '<div class="scoreplan-help"><p class="eyebrow">Como o Scoreplan ajuda nesta fase</p><p>' + SCOREPLAN_HELP[overallLevel] + '</p></div>';
+
+    html += '<div class="chart-toolbar"><h3>Maturidade por dimensão</h3><button type="button" class="ghost-btn" id="toggleTableBtn">' + (showTable ? "Ver como gráfico" : "Ver como tabela") + '</button></div>';
+
+    if (showTable) {
+      html += buildTableHtml(sorted);
+    } else {
+      html += buildChartHtml(sorted);
+    }
+
+    html += buildPrioritiesHtml(sorted);
+
+    html += '<div class="actions"><button type="button" class="primary-btn" id="copySummaryBtn">Copiar resumo em texto</button><span class="toast" id="copyToast">Copiado.</span></div>';
+
+    html += buildFollowUpHtml();
+
+    shell.innerHTML = html;
+
+    document.getElementById("toggleTableBtn").addEventListener("click", function () {
+      showTable = !showTable;
+      renderResults();
+    });
+    document.getElementById("copySummaryBtn").addEventListener("click", copySummary);
+
+    attachBarTooltips();
+  }
+
+  function buildChartHtml(sorted) {
+    var html = '<div class="scale-row"><span></span><span class="scale-ticks"><span>1</span><span>2</span><span>3</span><span>4</span></span><span></span></div>';
+    html += '<ul class="bars-list">';
+    sorted.forEach(function (row) {
+      var widthPct = ((row.score - 1) / 3) * 100;
+      html += '<li class="bar-row" tabindex="0" data-dim="' + row.dim.id + '" aria-label="' + row.dim.name + ': ' + fmt(row.score) + ' de 4, nível ' + row.level + '">';
+      html += '<div class="bar-row-main">';
+      html += '<div class="bar-label">' + row.dim.name + '<span class="tag">' + row.dim.tag + '</span></div>';
+      html += '<div class="bar-track"><div class="bar-fill" style="width:' + widthPct + '%;background:var(--level-' + row.level + '-bg)"></div></div>';
+      html += '<div class="bar-value">' + fmt(row.score) + '</div>';
+      html += '</div>';
+      html += '<p class="bar-help"><strong>Como o Scoreplan ajuda:</strong> ' + row.dim.scoreplanHelp[row.level] + '</p>';
+      html += '</li>';
+    });
+    html += '</ul>';
+    return html;
+  }
+
+  function buildTableHtml(sorted) {
+    var html = '<table class="data-table"><thead><tr><th>Dimensão</th><th>Referência</th><th>Pontuação</th><th>Nível</th></tr></thead><tbody>';
+    sorted.forEach(function (row) {
+      html += '<tr><td>' + row.dim.name + '</td><td>' + row.dim.tag + '</td><td class="num">' + fmt(row.score) + ' / 4,0</td><td>' + LEVEL_NAMES[row.level] + '</td></tr>';
+      html += '<tr class="help-row"><td colspan="4"><p class="bar-help"><strong>Como o Scoreplan ajuda:</strong> ' + row.dim.scoreplanHelp[row.level] + '</p></td></tr>';
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function buildPrioritiesHtml(sorted) {
+    var top3 = sorted.slice(0, 3);
+    var html = '<div class="priorities"><h3>Prioridades sugeridas para evoluir</h3>';
+    top3.forEach(function (row, i) {
+      html += '<div class="priority-item"><span class="priority-rank">' + (i + 1) + '</span><div><strong>' + row.dim.name + '</strong> — ' + fmt(row.score) + ' / 4,0, ' + LEVEL_NAMES[row.level] + '<p>' + row.dim.recommendations[row.level] + '</p></div></div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function attachBarTooltips() {
+    var tooltip = document.getElementById("tooltip");
+    document.querySelectorAll(".bar-row").forEach(function (row) {
+      row.addEventListener("mouseenter", function (e) { showTooltip(row, e.clientX, e.clientY); });
+      row.addEventListener("mousemove", function (e) { positionTooltip(e.clientX, e.clientY); });
+      row.addEventListener("mouseleave", hideTooltip);
+      row.addEventListener("focus", function () {
+        var rect = row.getBoundingClientRect();
+        showTooltip(row, rect.left + 20, rect.top);
+      });
+      row.addEventListener("blur", hideTooltip);
+    });
+
+    function showTooltip(row, x, y) {
+      var dimId = row.getAttribute("data-dim");
+      var data = lastResults.dimScores.filter(function (d) { return d.dim.id === dimId; })[0];
+      tooltip.innerHTML = '<strong>' + data.dim.name + '</strong>' + fmt(data.score) + ' de 4,0 — Nível ' + data.level + ' (' + LEVEL_NAMES[data.level] + '). Com base nas ' + data.dim.statements.length + ' afirmações desta dimensão.';
+      tooltip.classList.add("visible");
+      positionTooltip(x, y);
+    }
+    function positionTooltip(x, y) {
+      tooltip.style.left = Math.min(x + 14, window.innerWidth - 260) + "px";
+      tooltip.style.top = (y + 18) + "px";
+    }
+    function hideTooltip() { tooltip.classList.remove("visible"); }
+  }
+
+  function buildSummaryText() {
+    if (!lastResults) return "";
+    var lines = [];
+    lines.push("RAIO-X DE MATURIDADE EM GESTÃO DE PROJETOS — SCOREPLAN");
+    lines.push("");
+    lines.push("Maturidade geral: " + fmt(lastResults.overallScore) + " / 4,0 — Nível " + lastResults.overallLevel + " (" + LEVEL_NAMES[lastResults.overallLevel] + ")");
+    lines.push("");
+    lines.push("Como o Scoreplan ajuda nesta fase:");
+    lines.push(SCOREPLAN_HELP[lastResults.overallLevel]);
+    lines.push("");
+    lines.push("Pontuação por dimensão (da menor para a maior maturidade):");
+    lastResults.sorted.forEach(function (row) {
+      lines.push("- " + row.dim.name + ": " + fmt(row.score) + " / 4,0 (" + LEVEL_NAMES[row.level] + ")");
+    });
+    lines.push("");
+    lines.push("Prioridades sugeridas:");
+    lastResults.sorted.slice(0, 3).forEach(function (row, i) {
+      lines.push((i + 1) + ". " + row.dim.name + " — " + row.dim.recommendations[row.level]);
+    });
+    return lines.join("\n");
+  }
+
+  function copySummary() {
+    if (!lastResults) return;
+    var text = buildSummaryText();
+
+    function showToast() {
+      var toast = document.getElementById("copyToast");
+      if (!toast) return;
+      toast.classList.add("visible");
+      setTimeout(function () { toast.classList.remove("visible"); }, 2000);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(showToast, function () { /* falha silenciosa */ });
+    }
+  }
+
+  // ---------- follow-up note (no data collection) ----------
+  function buildFollowUpHtml() {
+    return '<div class="follow-up"><p>Se quiser aprofundar esse diagnóstico, me responde essa mensagem.</p></div>';
+  }
+
+  function wireViewResultButton() {
+    document.getElementById("viewResultBtn").addEventListener("click", function (e) {
+      if (e.currentTarget.disabled) return;
+      showResultsPage();
+    });
+    document.getElementById("backToFormBtn").addEventListener("click", showFormPage);
+  }
+
+  function wireResetButton() {
+    var btn = document.getElementById("resetBtn");
+    var confirming = false;
+    btn.addEventListener("click", function () {
+      if (!confirming) {
+        confirming = true;
+        btn.textContent = "Confirmar: apagar todas as respostas?";
+        setTimeout(function () { confirming = false; btn.textContent = "Limpar respostas e começar do zero"; }, 3000);
+        return;
+      }
+      state.answers = {};
+      confirming = false;
+      btn.textContent = "Limpar respostas e começar do zero";
+      syncAllFreqButtons();
+      saveState();
+      renderResults();
+    });
+  }
+
+  // ---------- init ----------
+  loadState();
+  renderLegend();
+  renderDimensions();
+  syncAllFreqButtons();
+  wireViewResultButton();
+  wireResetButton();
+  renderResults();
+})();
+</script>
+</body>
+</html>
